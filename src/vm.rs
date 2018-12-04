@@ -93,4 +93,33 @@ impl VirtualMachine {
             return Err(Error::last_os_error());
         }
     }
+
+	pub fn create_irqchip(&self) -> Result<(), Error> {
+		let result = unsafe { libc::ioctl(self.ioctl.as_raw_fd(), KVM_CREATE_IRQCHIP, 0) };
+		if result == 0 {
+			Ok(())
+		} else {
+            Err(Error::last_os_error())
+        }
+	}
+
+	pub fn create_pit(&self) -> Result<(), Error> {
+		let result = unsafe { libc::ioctl(self.ioctl.as_raw_fd(), KVM_CREATE_PIT, 0) };
+		if result == 0 {
+			Ok(())
+		} else {
+            Err(Error::last_os_error())
+        }
+	}
+
+	pub fn create_pit2(&self) -> Result<(), Error> {
+		let pit = kvm_pit_config::default();
+
+		let result = unsafe { libc::ioctl(self.ioctl.as_raw_fd(), KVM_CREATE_PIT2, &pit) };
+		if result == 0 {
+			Ok(())
+		} else {
+            Err(Error::last_os_error())
+        }
+	}
 }

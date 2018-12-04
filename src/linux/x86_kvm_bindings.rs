@@ -4329,10 +4329,15 @@ impl Default for kvm_irqchip {
     }
 }
 #[repr(C)]
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct kvm_pit_config {
     pub flags: __u32,
     pub pad: [__u32; 15usize],
+}
+impl Default for kvm_pit_config {
+    fn default() -> Self {
+        unsafe { ::std::mem::zeroed() }
+    }
 }
 #[test]
 fn bindgen_test_layout_kvm_pit_config() {

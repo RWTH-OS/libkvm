@@ -12,10 +12,11 @@ use std::fs::File;
 use std::io::Error;
 use std::os::unix::io::AsRawFd;
 
-use linux::kvm_bindings::{kvm_cpuid_entry2, kvm_fpu, kvm_msr_entry, kvm_regs, kvm_run, kvm_sregs, kvm_mp_state};
+use linux::kvm_bindings::{kvm_cpuid_entry2, kvm_fpu, kvm_msr_entry, kvm_regs, kvm_run, kvm_sregs, kvm_mp_state, kvm_translation};
 use linux::kvm_ioctl::{
     KVM_GET_CPUID2, KVM_SET_CPUID2, KVM_GET_FPU, KVM_GET_MSRS, KVM_GET_REGS, KVM_GET_SREGS,
     KVM_RUN, KVM_SET_FPU, KVM_SET_MSRS, KVM_SET_REGS, KVM_SET_SREGS, KVM_GET_MP_STATE, KVM_SET_MP_STATE,
+    KVM_TRANSLATE,
 };
 use system::KVMSystem;
 use utils::{KVMCpuid2Wrapper, KVMMSRSWrapper};
@@ -180,6 +181,18 @@ impl VirtualCPU {
         }
     }
 
+    pub fn translate_address(&self, address: u64) -> Result<u64, Error> {
+		let mut kvm_translate: kvm_translation = Default::default();
+        kvm_translate.linear_address = address;
+        let result =
+            unsafe { libc::ioctl(self.ioctl.as_raw_fd(), KVM_TRANSLATE, &mut kvm_translate) };
+        if result == 0 {
+            return Ok(kvm_translate.physical_address);
+        } else {
+            return Err(Error::last_os_error());
+        }
+    }
+  
     pub fn set_cpuid(&self, cpuid_entries: &[kvm_cpuid_entry2]) -> Result<(), Error> {
         let kvm_cpuid = KVMCpuid2Wrapper::from_cpuid_entries(cpuid_entries);
         let result =

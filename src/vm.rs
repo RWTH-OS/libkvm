@@ -62,7 +62,7 @@ impl VirtualMachine {
     /// let result = vm.set_user_memory_region(&slot);
     /// ```
 
-    pub fn set_user_memory_region(&self, slot: &MemorySlot) -> Result<bool, Error> {
+    pub fn set_user_memory_region(&self, slot: &dyn MemorySlot) -> Result<bool, Error> {
         let region = kvm_userspace_memory_region {
             slot: slot.slot_id(),
             flags: slot.flags(),
